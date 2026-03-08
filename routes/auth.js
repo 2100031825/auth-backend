@@ -26,10 +26,11 @@ function mapServerError(error, defaultMessage) {
 }
 
 function buildCookieOptions() {
+  const secure = process.env.COOKIE_SECURE === "true";
   return {
     httpOnly: true,
-    secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "strict",
+    secure,
+    sameSite: secure ? "none" : "strict",
     maxAge: 24 * 60 * 60 * 1000
   };
 }
@@ -114,11 +115,7 @@ router.post("/login", async (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.COOKIE_SECURE === "true",
-    sameSite: "strict"
-  });
+  res.clearCookie("token", buildCookieOptions());
   return res.status(200).json({ message: "Logged out successfully" });
 });
 
